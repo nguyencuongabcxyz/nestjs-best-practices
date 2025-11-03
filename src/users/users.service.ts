@@ -1,13 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { User } from 'generated/prisma/client';
 import { PrismaService } from 'src/global-services/prisma/prisma.service';
 import { UserModel } from './service-model/user.model';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getUsers(page: number, limit: number): Promise<User[]> {
+    this.logger.log(`Getting users with page ${page} and limit ${limit}`);
     return await this.prisma.user.findMany({
       skip: (page - 1) * limit,
       take: limit,
