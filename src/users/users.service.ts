@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'generated/prisma/client';
 import { PrismaService } from 'src/global-services/prisma/prisma.service';
 import { UserModel } from './service-model/user.model';
@@ -7,8 +7,14 @@ import { UserModel } from './service-model/user.model';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getUsers(): Promise<User[]> {
-    return await this.prisma.user.findMany();
+  async getUsers(page: number, limit: number): Promise<User[]> {
+    return await this.prisma.user.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   async createUser(user: UserModel): Promise<User> {
@@ -17,5 +23,15 @@ export class UsersService {
         name: user.name,
       },
     });
+  }
+
+  async getUserById(id: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }
