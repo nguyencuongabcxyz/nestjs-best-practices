@@ -40,7 +40,6 @@ export class UsersController {
     description: 'The list of users',
     type: [GetUserDto],
   })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
   async getUsers(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
@@ -65,11 +64,6 @@ export class UsersController {
   @ApiResponse({
     status: 404,
     description: 'User not found',
-    type: ErrorResponse,
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
     type: ErrorResponse,
   })
   async getUserById(@Param('id') id: string): Promise<User> {

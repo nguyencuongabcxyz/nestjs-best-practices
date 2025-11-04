@@ -2,7 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConsoleLogger, Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { CatchAllFilter } from './common/filters/catch-all.filter';
+import {
+  CatchAllFilter,
+  ErrorResponse,
+} from './common/filters/catch-all.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,7 +20,11 @@ async function bootstrap() {
     .setTitle('PFJ Backend API')
     .setDescription('RESTful API documentation for the PFJ backend.')
     .setVersion('1.0')
-    .addTag('PFJ')
+    .addGlobalResponse({
+      status: 500,
+      description: 'Internal server error',
+      type: ErrorResponse,
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
