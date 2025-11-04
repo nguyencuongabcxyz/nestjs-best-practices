@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from 'generated/prisma/client';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { GetUserDto } from './dto/get-user.dto';
+import { UserNotFoundError } from './users.errors';
+import { ErrorResponse } from 'src/common/filters/catch-all.filter';
 
 @Controller('users')
 export class UsersController {
@@ -52,9 +62,24 @@ export class UsersController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'The user', type: GetUserDto })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: ErrorResponse,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+    type: ErrorResponse,
+  })
   async getUserById(@Param('id') id: string): Promise<User> {
-    return this.usersService.getUserById(id);
+    try {
+      return await this.usersService.getUserById(id);
+    } catch (error) {
+      if (error instanceof UserNotFoundError) {
+        throw new NotFoundException(error.errorPayload());
+      }
+      throw error;
+    }
   }
 }
