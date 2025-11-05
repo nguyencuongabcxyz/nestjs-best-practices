@@ -14,6 +14,8 @@ import { GetUserDto } from './dto/get-user.dto';
 import { UserNotFoundError } from './users.errors';
 import { ErrorResponse } from 'src/common/filters/catch-all.filter';
 import { GetUsersQueryDto } from './dto/get-users-query.dto';
+import { User } from 'generated/prisma/client';
+import { UserModel } from './service-model/user.model';
 
 @Controller('users')
 export class UsersController {
@@ -24,7 +26,11 @@ export class UsersController {
    */
   @Get()
   async getUsers(@Query() query: GetUsersQueryDto): Promise<GetUserDto[]> {
-    return this.usersService.getUsers(query.page || 1, query.limit || 10);
+    const users = await this.usersService.getUsers(
+      query.page || 1,
+      query.limit || 10,
+    );
+    return users.map((user) => UsersController.mapUserToGetUserDto(user));
   }
 
   /**
@@ -32,7 +38,8 @@ export class UsersController {
    */
   @Post()
   async createUser(@Body() user: CreateUserDto): Promise<GetUserDto> {
-    return this.usersService.createUser({ name: user.name });
+    const createdUser = await this.usersService.createUser(UsersController.mapCreateUserDtoToUserModel(user));
+    return UsersController.mapUserToGetUserDto(createdUser);
   }
 
   /**
@@ -47,12 +54,20 @@ export class UsersController {
   async getUserById(@Param('id') id: string): Promise<GetUserDto> {
     try {
       const user = await this.usersService.getUserById(id);
-      return { name: user.name };
+      return UsersController.mapUserToGetUserDto(user);
     } catch (error) {
       if (error instanceof UserNotFoundError) {
         throw new NotFoundException(error.errorPayload());
       }
       throw error;
     }
+  }
+
+  static mapUserToGetUserDto(user: User): GetUserDto {
+    return { name: user.name };
+  }
+
+  static mapCreateUserDtoToUserModel(dto: CreateUserDto): UserModel {
+    return { name: dto.name };
   }
 }
