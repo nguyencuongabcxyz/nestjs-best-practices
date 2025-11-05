@@ -38,7 +38,9 @@ export class UsersController {
    */
   @Post()
   async createUser(@Body() user: CreateUserDto): Promise<GetUserDto> {
-    const createdUser = await this.usersService.createUser(UsersController.mapCreateUserDtoToUserModel(user));
+    const createdUser = await this.usersService.createUser(
+      UsersController.mapCreateUserDtoToUserModel(user),
+    );
     return UsersController.mapUserToGetUserDto(createdUser);
   }
 
@@ -64,7 +66,7 @@ export class UsersController {
   }
 
   static mapUserToGetUserDto(user: User): GetUserDto {
-    return { name: user.name };
+    return { id: user.id, name: user.name };
   }
 
   static mapCreateUserDtoToUserModel(dto: CreateUserDto): UserModel {

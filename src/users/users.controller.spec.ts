@@ -44,7 +44,9 @@ describe('UsersController', () => {
           updatedAt: new Date(),
         },
       ];
-      const getUserDtos: GetUserDto[] = users.map((user) => UsersController.mapUserToGetUserDto(user));
+      const getUserDtos: GetUserDto[] = users.map((user) =>
+        UsersController.mapUserToGetUserDto(user),
+      );
       usersService.getUsers.mockResolvedValue(users);
 
       const query: GetUsersQueryDto = { page: 1, limit: 10 };
@@ -58,9 +60,17 @@ describe('UsersController', () => {
     });
 
     it('should use default pagination if query params are missing', async () => {
-      const users: User[] = [{ name: 'Charlie', id: '3', createdAt: new Date(), updatedAt: new Date() },
+      const users: User[] = [
+        {
+          name: 'Charlie',
+          id: '3',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
-      const getUserDtos: GetUserDto[] = users.map((user) => UsersController.mapUserToGetUserDto(user));
+      const getUserDtos: GetUserDto[] = users.map((user) =>
+        UsersController.mapUserToGetUserDto(user),
+      );
       usersService.getUsers.mockResolvedValue(users);
 
       const result = await controller.getUsers({} as GetUsersQueryDto);
@@ -73,20 +83,33 @@ describe('UsersController', () => {
   describe('createUser', () => {
     it('should create and return a new user', async () => {
       const dto: CreateUserDto = { name: 'John', email: 'john@example.com' };
-      const createdUser: User = { name: 'John', id: '4', createdAt: new Date(), updatedAt: new Date() };
-      const getUserDto: GetUserDto = UsersController.mapUserToGetUserDto(createdUser);
+      const createdUser: User = {
+        name: 'John',
+        id: '4',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const getUserDto: GetUserDto =
+        UsersController.mapUserToGetUserDto(createdUser);
       usersService.createUser.mockResolvedValue(createdUser);
 
       const result = await controller.createUser(dto);
 
       expect(result).toEqual(getUserDto);
-      expect(usersService.createUser).toHaveBeenCalledWith(UsersController.mapCreateUserDtoToUserModel(dto));
+      expect(usersService.createUser).toHaveBeenCalledWith(
+        UsersController.mapCreateUserDtoToUserModel(dto),
+      );
     });
   });
 
   describe('getUserById', () => {
     it('should return a user when found', async () => {
-      const user: User = { name: 'Jane', id: '5', createdAt: new Date(), updatedAt: new Date() };
+      const user: User = {
+        name: 'Jane',
+        id: '5',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       usersService.getUserById.mockResolvedValue(user);
 
       const result = await controller.getUserById('123');
@@ -96,7 +119,6 @@ describe('UsersController', () => {
     });
 
     it('should throw NotFoundException when user is not found', async () => {
-      
       const error = new UserNotFoundError('999');
       usersService.getUserById.mockRejectedValue(error);
 
@@ -110,7 +132,7 @@ describe('UsersController', () => {
       usersService.getUserById.mockRejectedValue(unexpectedError);
 
       await expect(controller.getUserById('123')).rejects.toThrow(
-        unexpectedError
+        unexpectedError,
       );
     });
   });
